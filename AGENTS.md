@@ -165,6 +165,12 @@ pnpm format:check
 
 If `format:check` fails, run `pnpm format`.
 
+### API smoke test
+
+`pnpm --filter @bootstrap/api test:smoke` compiles the Nest `AppModule` with the same module graph the API boots locally. Keep this check in CI and update it whenever API module wiring, providers, imports, or required environment variables change.
+
+This smoke test catches dependency-injection errors, circular module/provider relationships, missing exports, and startup-only configuration issues that unit tests can miss. These failures sometimes appear only when the app is started locally or when the full module graph is compiled, even if narrower CI checks pass.
+
 ## Module Documentation
 
 Modules and complex subsystems should have an `AGENTS.md` in their directory once they become large enough that an engineer would otherwise need to read many files to recover context.
