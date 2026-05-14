@@ -1,0 +1,39 @@
+{
+  "name": "bootstrap",
+  "version": "0.0.0",
+  "private": true,
+  "packageManager": "pnpm@10.32.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "db:down": "docker compose down",
+    "db:migrate": "pnpm --filter @bootstrap/api migration:run",
+    "db:reset": "node scripts/reset-db.mjs",
+    "db:up": "docker compose up -d postgres",
+    "dev": "tilt up",
+    "dev:check": "node scripts/dev-env.mjs check-tools",
+    "dev:down": "tilt down",
+    "dev:env": "node scripts/dev-env.mjs bootstrap-env",
+    "format": "prettier --no-cache --write \"apps/**/*.{ts,tsx,mjs,css,html}\" \"packages/**/*.ts\" \"scripts/**/*.mjs\"",
+    "format:check": "prettier --no-cache --check \"apps/**/*.{ts,tsx,mjs,css,html}\" \"packages/**/*.ts\" \"scripts/**/*.mjs\"",
+    "web:dev": "pnpm --filter @bootstrap/web dev"
+  },
+  "devDependencies": {
+    "@types/node": "22.19.15",
+    "eslint-config-prettier": "^10.1.8",
+    "prettier": "^3.8.1",
+    "typescript": "^5.9.3"
+  },
+  "pnpm": {
+    "overrides": {
+      "@types/node": "22.19.15"
+    },
+    "onlyBuiltDependencies": [
+      "@nestjs/core",
+      "@swc/core",
+      "bcrypt",
+      "esbuild"
+    ]
+  }
+}
