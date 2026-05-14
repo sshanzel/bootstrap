@@ -3,7 +3,7 @@ cfg = config.parse()
 
 setup_resources = [
   'check-tools',
-  'bootstrap-env',
+  'sync-env',
   'pnpm-install',
 ]
 core_resources = setup_resources + [
@@ -62,8 +62,8 @@ local_resource(
 )
 
 local_resource(
-  'bootstrap-env',
-  cmd='node scripts/dev-env.mjs bootstrap-env',
+  'sync-env',
+  cmd='node scripts/dev-env.mjs sync-env',
   deps=[
     'apps/api/.env.example',
     'apps/web/.env.example',
@@ -108,7 +108,7 @@ local_resource(
     'packages/shared/src',
   ],
   resource_deps=[
-    'bootstrap-env',
+    'sync-env',
     'pnpm-install',
     'postgres-ready',
   ],
@@ -137,7 +137,7 @@ local_resource(
   cmd='',
   serve_cmd='pnpm --filter @bootstrap/web dev -- --host 0.0.0.0',
   resource_deps=[
-    'bootstrap-env',
+    'sync-env',
     'pnpm-install',
     'api',
   ],

@@ -28,7 +28,28 @@ pnpm --filter @bootstrap/web test
 pnpm --filter @bootstrap/shared test
 pnpm format
 pnpm dev
+pnpm init:project -- --name "My App"
 ```
+
+## Creating a New Project From This Starter
+
+Run the initializer immediately after copying the starter into a new folder:
+
+```bash
+pnpm init:project -- --name "My App"
+```
+
+The initializer updates package names/scopes, TypeScript path aliases, imports, docs, UI/API titles, local database defaults, Docker/Tilt config, and the pnpm lockfile. It derives a slug, package scope, and database name from the app name unless explicit `--slug`, `--scope`, or `--db-name` values are provided.
+
+Use `--reset-git` only inside a copied project folder when the copied git history should be removed and replaced with a fresh `git init`.
+
+After initialization, update project-specific secrets and external service settings:
+
+- `apps/api/.env` and `apps/web/.env`
+- Google OAuth client settings and callback URLs
+- README product description and starter UI copy
+- local Postgres port if another project already uses `5434`
+- git remote, CI secrets, and deployment settings
 
 ## Local Development
 

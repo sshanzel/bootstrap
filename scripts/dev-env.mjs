@@ -128,7 +128,7 @@ function checkTools() {
   console.log('Local dev tools are ready.');
 }
 
-function bootstrapEnv() {
+function syncEnv() {
   for (const [examplePath, targetPath] of envFiles) {
     if (!existsSync(examplePath)) {
       console.error(`Missing ${examplePath}.`);
@@ -199,13 +199,13 @@ const command = process.argv[2];
 
 if (command === 'check-tools') {
   checkTools();
-} else if (command === 'bootstrap-env') {
-  bootstrapEnv();
+} else if (command === 'sync-env') {
+  syncEnv();
 } else if (command === 'wait-postgres') {
   waitForPostgres();
 } else {
   console.error(
-    'Usage: node scripts/dev-env.mjs <check-tools|bootstrap-env|wait-postgres>',
+    'Usage: node scripts/dev-env.mjs <check-tools|sync-env|wait-postgres>',
   );
   process.exit(1);
 }

@@ -14,7 +14,8 @@
     "dev": "tilt up",
     "dev:check": "node scripts/dev-env.mjs check-tools",
     "dev:down": "tilt down",
-    "dev:env": "node scripts/dev-env.mjs bootstrap-env",
+    "dev:env": "node scripts/dev-env.mjs sync-env",
+    "init:project": "node scripts/initialize-project.mjs",
     "format": "prettier --no-cache --write \"apps/**/*.{ts,tsx,mjs,css,html}\" \"packages/**/*.ts\" \"scripts/**/*.mjs\"",
     "format:check": "prettier --no-cache --check \"apps/**/*.{ts,tsx,mjs,css,html}\" \"packages/**/*.ts\" \"scripts/**/*.mjs\"",
     "web:dev": "pnpm --filter @bootstrap/web dev"
