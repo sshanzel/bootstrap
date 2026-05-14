@@ -19,5 +19,11 @@ export default tseslint.config(
     },
     rules: baseRules,
   },
+  {
+    files: ['src/main.ts'],
+    rules: {
+      'no-console': ['warn', { allow: ['log', 'warn', 'error'] }],
+    },
+  },
   eslintConfigPrettier,
 );

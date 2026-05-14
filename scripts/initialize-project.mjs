@@ -164,7 +164,12 @@ try {
     ['@bootstrap', `@${packageScope}`],
     ['bootstrap-theme', `${slug}-theme`],
     ['bootstrap.example', `${slug}.example`],
+    ['POSTGRES_DB: bootstrap_test', `POSTGRES_DB: ${databaseName}_test`],
     ['POSTGRES_DB: bootstrap', `POSTGRES_DB: ${databaseName}`],
+    [
+      'postgresql://postgres:postgres@localhost:5432/bootstrap_test',
+      `postgresql://postgres:postgres@localhost:5432/${databaseName}_test`,
+    ],
     [
       'DATABASE_URL=postgresql://postgres:postgres@localhost:5434/bootstrap',
       `DATABASE_URL=postgresql://postgres:postgres@localhost:5434/${databaseName}`,

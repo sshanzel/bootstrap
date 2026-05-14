@@ -39,7 +39,7 @@ Run the initializer immediately after copying the starter into a new folder:
 pnpm init:project -- --name "My App"
 ```
 
-The initializer updates package names/scopes, TypeScript path aliases, imports, docs, UI/API titles, local database defaults, Docker/Tilt config, and the pnpm lockfile. It derives a slug, package scope, and database name from the app name unless explicit `--slug`, `--scope`, or `--db-name` values are provided.
+The initializer updates package names/scopes, TypeScript path aliases, imports, docs, UI/API titles, local database defaults, GitHub workflow package filters and test database names, Docker/Tilt config, and the pnpm lockfile. It derives a slug, package scope, and database name from the app name unless explicit `--slug`, `--scope`, or `--db-name` values are provided.
 
 Use `--reset-git` only inside a copied project folder when the copied git history should be removed and replaced with a fresh `git init`.
 
@@ -50,6 +50,8 @@ After initialization, update project-specific secrets and external service setti
 - README product description and starter UI copy
 - local Postgres port if another project already uses `5434`
 - git remote, CI secrets, and deployment settings
+
+When adding or renaming GitHub workflow jobs, keep `scripts/initialize-project.mjs` replacements in sync so copied projects do not inherit `@bootstrap` package filters or `bootstrap_test` database names. If a workflow value cannot be safely derived by the initializer, document the required manual update in this section.
 
 ## Local Development
 
@@ -151,9 +153,12 @@ Always run the repo scripts before pushing:
 pnpm --filter @bootstrap/api typecheck
 pnpm --filter @bootstrap/web typecheck
 pnpm --filter @bootstrap/shared typecheck
+pnpm --filter @bootstrap/api lint:ci
+pnpm --filter @bootstrap/web lint:ci
 pnpm --filter @bootstrap/api test
 pnpm --filter @bootstrap/web test
 pnpm --filter @bootstrap/shared test
+pnpm --filter @bootstrap/web build
 pnpm format:check
 ```
 

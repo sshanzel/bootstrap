@@ -1,0 +1,77 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  api:
+    name: API
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: bootstrap_test
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      ALLOWED_ORIGINS: http://localhost:3000,http://localhost:4321
+      API_BASE_URL: http://localhost:4000
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/bootstrap_test
+      FRONTEND_URL: http://localhost:3000
+      GOOGLE_CLIENT_ID: test-google-client-id
+      GOOGLE_CLIENT_SECRET: test-google-client-secret
+      JWT_SECRET: test-jwt-secret
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.32.0
+      - uses: actions/setup-node@v4
+        with:
+          cache: pnpm
+          node-version: 22
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @bootstrap/api typecheck
+      - run: pnpm --filter @bootstrap/api lint:ci
+      - run: pnpm --filter @bootstrap/api test
+
+  web:
+    name: Web and shared packages
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.32.0
+      - uses: actions/setup-node@v4
+        with:
+          cache: pnpm
+          node-version: 22
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @bootstrap/shared typecheck
+      - run: pnpm --filter @bootstrap/shared test
+      - run: pnpm --filter @bootstrap/web typecheck
+      - run: pnpm --filter @bootstrap/web lint:ci
+      - run: pnpm --filter @bootstrap/web test
+      - run: pnpm --filter @bootstrap/web build
+      - run: pnpm format:check
+
+  ci:
+    name: CI aggregate
+    runs-on: ubuntu-latest
+    needs:
+      - api
+      - web
+    steps:
+      - run: echo "CI passed"
