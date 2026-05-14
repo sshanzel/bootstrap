@@ -155,6 +155,7 @@ pnpm --filter @bootstrap/web typecheck
 pnpm --filter @bootstrap/shared typecheck
 pnpm --filter @bootstrap/api lint:ci
 pnpm --filter @bootstrap/web lint:ci
+pnpm --filter @bootstrap/api test:smoke
 pnpm --filter @bootstrap/api test
 pnpm --filter @bootstrap/web test
 pnpm --filter @bootstrap/shared test

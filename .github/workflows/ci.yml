@@ -44,6 +44,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @bootstrap/api typecheck
       - run: pnpm --filter @bootstrap/api lint:ci
+      - run: pnpm --filter @bootstrap/api test:smoke
       - run: pnpm --filter @bootstrap/api test
 
   web:
