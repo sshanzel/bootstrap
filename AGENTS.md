@@ -87,6 +87,20 @@ These rules are mandatory.
 - **Do not interpolate unknown errors directly** — normalize errors before logging or returning messages.
 - **Never leak stack traces to users** — user-facing messages should use safe summaries, not raw server errors.
 
+## Review-Learned Guardrails
+
+- **Run the pre-review checklist before requesting review** — for non-trivial PRs, explicitly check the common review traps before opening or re-requesting review: shared contract drift, lifecycle transitions, retry/idempotency, auth/visibility/security boundaries, batched reads, frontend pending/cleanup behavior, generated migrations, and documentation updates.
+- **Keep shared contracts synchronized end to end** — when a schema, response, status, file kind, product ID, limit, or option changes, update the shared Zod schema/constants, API presenter parsing, app-client or frontend helpers/tests, mocks/seeds, and docs together. Do not leave hard-coded copies in presenters, screens, scripts, or tests.
+- **Design stateful features as lifecycle machines first** — before changing durable rows such as jobs, uploads, notifications, integrations, sessions, or outbox events, name the allowed states and transitions. Late, duplicate, or stale actions must be explicit no-ops or controlled errors, and tests should prove terminal states cannot be downgraded.
+- **Make retry-prone actions idempotent** — user actions, webhooks, jobs, and frontend retries should not double-consume limits, duplicate analytics/events, or downgrade terminal state. Treat already-applied actions as no-ops or return the existing durable result when that is the product behavior.
+- **Use atomic writes for unique constraints** — read-then-insert is not enough for rows protected by unique keys. Use conflict-safe inserts/upserts, catch and reload duplicate-key races, or lock and conditionally update inside the transaction so concurrent requests do not turn an idempotent path into a 500.
+- **New transports inherit existing security policy** — HTTP, WebSocket, webhooks, server actions, and future transports must reuse the same auth, CORS, origin, and visibility rules unless the PR explicitly documents a narrower exception. Do not use permissive transport defaults in production paths.
+- **Batch presenter reads** — list, feed, table, notification, and media presenters should batch related lookups and assemble results in memory. Avoid per-row DB reads, sequential signing, and unbounded parameter lists inside result-building loops.
+- **Frontend submit paths must lock pending work** — buttons, gestures, and attachment sends should reflect in-flight mutations in both `disabled` and loading states. Preserve drafts or local selections until the server confirms success, and make retry behavior explicit.
+- **Frontend effects must clean up runtime work** — timers, listeners, object URLs, upload previews, subscriptions, sockets, and deferred callbacks must be cleared on unmount, logout, account switch, and relevant dependency changes.
+- **Generated migrations are part of review readiness** — entity-driven schema changes should use the project migration generator, and constraint/rename changes should be checked against both fresh and existing database shapes when practical.
+- **Turn repeated PR lessons into module rules** — when review feedback reveals a durable contract or invariant, document it in the root or owning module `AGENTS.md` before asking for another review pass.
+
 ## Conventions
 
 - **ESM only** — keep `"type": "module"` and modern TS/ESM imports.
