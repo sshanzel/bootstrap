@@ -30,8 +30,8 @@ Use this skill when the user wants to work through PR review feedback end-to-end
    - If multiple items share the same root cause or must be fixed together, keep separate rows and mention the shared fix inside each relevant `Proposed action`, e.g. `Same root cause as item 2; update the shared parser and group both into one commit.`
    - Do not use one-word actions such as `Fix`, `Update`, or `Reply`; write a short phrase or sentence instead, such as `Adjust the token refresh guard to return early when the cookie is missing`.
    - For comments that do not need a code change, describe the intended response, verification, or reason for no change.
-   - Explicitly ask the user to confirm before proceeding, for example: `Please confirm if you want me to apply these actions. I will not change code, reply, resolve threads, commit, push, or request review until you say to go ahead.`
-   - Do not perform any review-response actions after the assessment table until the user explicitly approves the proposed actions. Approval can be phrased naturally, such as `go ahead`, `proceed`, or `apply these`.
+   - Explicitly ask the user to confirm before proceeding with the exact `go` signal. Use this template sentence: Please reply with `go` if you want me to apply these actions. I will not change code, reply, resolve threads, commit, push, or request review until you send `go`.
+   - Do not perform any review-response actions after the assessment table until the user explicitly approves the proposed actions with `go`.
 5. After explicit user confirmation, use this review-response loop:
    - apply fixes
    - run checks
@@ -43,8 +43,7 @@ Use this skill when the user wants to work through PR review feedback end-to-end
    - submit any pending review with `COMMENT`, or delete it if it was created accidentally and contains no useful comments
    - add a formatted PR summary comment, similar in quality to the assessment table shown to the user, that reports the outcome and what was done
    - re-request review from the relevant reviewer(s), including Copilot when Copilot reviewed the PR
-   - prefer the repository-supported `gh`/GitHub review-request mechanism when available
-   - if Copilot cannot be requested through reviewer assignment, use the repository's accepted Copilot trigger comment
+   - request Copilot review through `gh` or the GitHub API; do not post `@copilot review` or any other trigger comment
    - mention in the final response whether the review request succeeded or was unavailable
 
 ## Rules
@@ -57,6 +56,39 @@ Use this skill when the user wants to work through PR review feedback end-to-end
 - Do not substitute a generic PR summary for the review round result summary; the result summary is an audit trail for the review round.
 - Do not leave pending reviews or draft comments behind after resolving threads.
 - Do not stop after resolving threads. A completed run ends with a summary comment and a re-review request unless the user explicitly says not to request review.
+- Do not request Copilot review with a PR comment such as `@copilot review`; use reviewer assignment through the CLI or API.
+
+## Requesting Copilot Re-Review
+
+Prefer the GitHub CLI reviewer assignment path:
+
+```bash
+gh pr edit "$pr_number" --add-reviewer "@copilot"
+```
+
+For older Copilot reviewer identities, fall back to the explicit reviewer login
+if `@copilot` is unavailable in the installed `gh` version:
+
+```bash
+gh pr edit "$pr_number" --add-reviewer copilot-pull-request-reviewer
+```
+
+If the CLI path does not work but authenticated API access is available, use the
+pull request reviewer request endpoint with Copilot's reviewer login:
+
+```bash
+owner_repo="$(gh repo view --json nameWithOwner --jq .nameWithOwner)"
+gh api \
+  --method POST \
+  "repos/$owner_repo/pulls/$pr_number/requested_reviewers" \
+  -f reviewers[]=copilot-pull-request-reviewer
+```
+
+After requesting review, verify the request or resulting review activity with:
+
+```bash
+gh pr view "$pr_number" --json reviewRequests,reviews
+```
 
 ## Summary Comment Format
 
