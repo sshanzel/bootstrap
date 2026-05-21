@@ -1,58 +1,51 @@
-import { Monitor, Moon, Sun } from 'lucide-react';
+import { Monitor, Moon, Sun, type LucideIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import type { ThemeName } from '@/theme/tokens';
 import { useTheme } from '@/theme/use-theme';
 
+interface ThemeOption {
+  Icon: LucideIcon;
+  label: string;
+  theme: ThemeName;
+}
+
+const themeOptions: ThemeOption[] = [
+  { Icon: Sun, label: 'Light', theme: 'light' },
+  { Icon: Moon, label: 'Dark', theme: 'dark' },
+  { Icon: Monitor, label: 'System', theme: 'system' },
+];
+
 export function ModeToggle() {
-  const { theme, resolvedTheme, setTheme } = useTheme();
-  const nextTheme = readNextTheme(theme, resolvedTheme);
+  const { theme, setTheme } = useTheme();
+  const selectedThemeOption = findThemeOption(theme);
 
   return (
     <div className="inline-flex items-center gap-2 rounded-full border border-border/80 bg-card/85 p-1 shadow-sm backdrop-blur">
-      <Button
-        aria-label="Use light theme"
-        onClick={() => setTheme('light')}
-        size="icon"
-        type="button"
-        variant={theme === 'light' ? 'default' : 'ghost'}
-      >
-        <Sun />
-      </Button>
-      <Button
-        aria-label="Use dark theme"
-        onClick={() => setTheme('dark')}
-        size="icon"
-        type="button"
-        variant={theme === 'dark' ? 'default' : 'ghost'}
-      >
-        <Moon />
-      </Button>
-      <Button
-        aria-label="Use system theme"
-        onClick={() => setTheme('system')}
-        size="icon"
-        type="button"
-        variant={theme === 'system' ? 'default' : 'ghost'}
-      >
-        <Monitor />
-      </Button>
+      {themeOptions.map(({ Icon, label, theme: optionTheme }) => (
+        <Button
+          aria-label={`Use ${label.toLowerCase()} theme`}
+          key={optionTheme}
+          onClick={() => setTheme(optionTheme)}
+          size="icon"
+          title={label}
+          type="button"
+          variant={theme === optionTheme ? 'default' : 'ghost'}
+        >
+          <Icon />
+        </Button>
+      ))}
       <span className="pr-3 text-xs font-medium text-muted-foreground">
-        Next: {nextTheme}
+        Theme: {selectedThemeOption.label}
       </span>
     </div>
   );
 }
 
-function readNextTheme(
-  theme: 'light' | 'dark' | 'system',
-  resolvedTheme: 'light' | 'dark',
-): 'light' | 'dark' | 'system' {
-  if (theme === 'system') {
-    return 'light';
+function findThemeOption(theme: ThemeName): ThemeOption {
+  const themeOption = themeOptions.find((option) => option.theme === theme);
+  if (!themeOption) {
+    throw new Error(`Missing theme option for ${theme}`);
   }
 
-  if (resolvedTheme === 'light') {
-    return 'dark';
-  }
-
-  return 'system';
+  return themeOption;
 }

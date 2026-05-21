@@ -6,6 +6,8 @@ import {
 } from 'react';
 import {
   semanticThemeTokens,
+  getNextTheme,
+  isThemeName,
   type ResolvedThemeName,
   type ThemeName,
 } from './tokens';
@@ -15,11 +17,7 @@ const THEME_STORAGE_KEY = 'bootstrap-theme';
 
 function readStoredTheme(): ThemeName | null {
   const storedTheme = window.localStorage.getItem(THEME_STORAGE_KEY);
-  return storedTheme === 'light' ||
-    storedTheme === 'dark' ||
-    storedTheme === 'system'
-    ? storedTheme
-    : null;
+  return isThemeName(storedTheme) ? storedTheme : null;
 }
 
 function resolveTheme(theme: ThemeName): ResolvedThemeName {
@@ -81,8 +79,7 @@ export function ThemeProvider({ children }: PropsWithChildren) {
 
   const toggleTheme = () => {
     setTheme((currentTheme) => {
-      const currentResolvedTheme = resolveTheme(currentTheme);
-      return currentResolvedTheme === 'dark' ? 'light' : 'dark';
+      return getNextTheme(currentTheme);
     });
   };
 

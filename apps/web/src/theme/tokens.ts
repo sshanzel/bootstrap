@@ -41,8 +41,21 @@ export const primitiveTokens = {
   },
 } as const;
 
-export type ResolvedThemeName = 'light' | 'dark';
-export type ThemeName = ResolvedThemeName | 'system';
+export const resolvedThemeNames = ['light', 'dark'] as const;
+export const themeNames = [...resolvedThemeNames, 'system'] as const;
+
+export type ResolvedThemeName = (typeof resolvedThemeNames)[number];
+export type ThemeName = (typeof themeNames)[number];
+
+export function isThemeName(value: string | null): value is ThemeName {
+  return themeNames.some((themeName) => themeName === value);
+}
+
+export function getNextTheme(theme: ThemeName): ThemeName {
+  const currentThemeIndex = themeNames.indexOf(theme);
+  const nextThemeIndex = (currentThemeIndex + 1) % themeNames.length;
+  return themeNames[nextThemeIndex];
+}
 
 export interface SemanticThemeTokens {
   background: string;
