@@ -20,7 +20,7 @@ export function ModeToggle() {
   const selectedThemeOption = findThemeOption(theme);
 
   return (
-    <div className="inline-flex items-center gap-2 rounded-full border border-border/80 bg-card/85 p-1 shadow-sm backdrop-blur">
+    <div className="inline-flex items-center gap-1 rounded-lg border border-border bg-card p-1">
       {themeOptions.map(({ Icon, label, theme: optionTheme }) => (
         <Button
           aria-label={`Use ${label.toLowerCase()} theme`}
@@ -34,7 +34,7 @@ export function ModeToggle() {
           <Icon />
         </Button>
       ))}
-      <span className="pr-3 text-xs font-medium text-muted-foreground">
+      <span className="hidden pr-2 text-xs font-medium text-muted-foreground sm:inline">
         Theme: {selectedThemeOption.label}
       </span>
     </div>

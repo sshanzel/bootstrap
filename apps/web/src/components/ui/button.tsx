@@ -4,23 +4,23 @@ import type * as React from 'react';
 import { cn } from '@/lib/utils';
 
 const buttonVariants = cva(
-  'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*="size-"])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/40 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40',
+  'inline-flex cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-semibold transition-colors duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*="size-"])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/40 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40',
   {
     variants: {
       variant: {
         default:
-          'bg-primary text-primary-foreground shadow-sm hover:bg-primary/90',
+          'border border-primary bg-primary text-primary-foreground hover:bg-primary/90',
         secondary:
-          'border border-border bg-secondary text-secondary-foreground hover:bg-secondary/80',
+          'border border-border bg-secondary text-secondary-foreground hover:border-primary/40 hover:bg-secondary/80',
         outline:
-          'border border-border bg-transparent text-foreground hover:bg-secondary',
+          'border border-border bg-transparent text-foreground hover:border-primary/50 hover:bg-secondary',
         ghost: 'text-muted-foreground hover:bg-secondary hover:text-foreground',
       },
       size: {
-        default: 'h-11 px-5 py-2',
+        default: 'h-10 px-4 py-2',
         sm: 'h-9 px-4',
-        lg: 'h-12 px-6 text-base',
-        icon: 'size-10 rounded-full',
+        lg: 'h-11 px-5 text-base',
+        icon: 'size-9',
       },
     },
     defaultVariants: {

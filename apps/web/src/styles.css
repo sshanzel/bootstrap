@@ -37,7 +37,66 @@
 }
 
 :root {
-  --radius: 1.5rem;
+  --radius: 0.5rem;
+  --background: #fbfcf8;
+  --foreground: #111711;
+  --card: #fbfcf8;
+  --card-foreground: #111711;
+  --popover: #fbfcf8;
+  --popover-foreground: #111711;
+  --primary: #217433;
+  --primary-foreground: #fbfcf8;
+  --secondary: #e3e7dd;
+  --secondary-foreground: #202820;
+  --muted: #e3e7dd;
+  --muted-foreground: #4e5648;
+  --accent: #fff0c2;
+  --accent-foreground: #573413;
+  --destructive: #c23c32;
+  --destructive-foreground: #fbfcf8;
+  --border: #cbd2c1;
+  --input: #cbd2c1;
+  --ring: #53b45b;
+  --display-foreground: #111711;
+  --hero-glow: rgba(33, 116, 51, 0.13);
+  color-scheme: light;
+  background: #fbfcf8;
+  color: #111711;
+  font-family: 'Manrope Variable', sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+.dark {
+  --background: #111711;
+  --foreground: #fbfcf8;
+  --card: #202820;
+  --card-foreground: #fbfcf8;
+  --popover: #202820;
+  --popover-foreground: #fbfcf8;
+  --primary: #53b45b;
+  --primary-foreground: #111711;
+  --secondary: #353d34;
+  --secondary-foreground: #e3e7dd;
+  --muted: #353d34;
+  --muted-foreground: #aeb8a1;
+  --accent: #482c13;
+  --accent-foreground: #fedc86;
+  --destructive: #8f2f29;
+  --destructive-foreground: #fbfcf8;
+  --border: #353d34;
+  --input: #353d34;
+  --ring: #8ed38c;
+  --display-foreground: #fbfcf8;
+  --hero-glow: rgba(83, 180, 91, 0.16);
+  color-scheme: dark;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  @apply border-border;
 }
 
 html,
@@ -47,25 +106,58 @@ body,
 }
 
 body {
+  min-width: 320px;
+  margin: 0;
   @apply bg-background text-foreground font-sans antialiased;
   background-image:
-    radial-gradient(circle at top, var(--hero-glow), transparent 34%),
+    radial-gradient(circle at 8% 0%, var(--hero-glow), transparent 28%),
     linear-gradient(
       180deg,
       var(--background) 0%,
       color-mix(in srgb, var(--card) 58%, var(--background)) 100%
+    ),
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--border) 24%, transparent) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--border) 18%, transparent) 1px,
+      transparent 1px
     );
+  background-size:
+    auto,
+    auto,
+    72px 72px,
+    72px 72px;
 }
 
 a {
+  color: inherit;
+  text-decoration: none;
   @apply transition-colors;
 }
 
 button,
-input {
+input,
+select,
+textarea {
   font: inherit;
 }
 
-* {
-  @apply border-border;
+::selection {
+  background: color-mix(in srgb, var(--primary) 24%, transparent);
+  color: var(--foreground);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
 }
