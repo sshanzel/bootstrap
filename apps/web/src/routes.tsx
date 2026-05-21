@@ -11,6 +11,7 @@ import {
 import {
   ArrowRight,
   Boxes,
+  Braces,
   CheckCircle2,
   Code2,
   Database,
@@ -87,6 +88,28 @@ interface StackItem {
   value: string;
 }
 
+interface LandingPrinciple {
+  description: string;
+  label: string;
+  marker: string;
+}
+
+interface LandingSystemRow {
+  detail: string;
+  layer: string;
+  signal: string;
+}
+
+interface SceneLineProps {
+  label: string;
+  value: string;
+}
+
+interface LandingStatProps {
+  label: string;
+  value: string;
+}
+
 const stackItems: StackItem[] = [
   { Icon: TerminalSquare, label: 'Runtime', value: 'Node 22 + pnpm' },
   { Icon: Database, label: 'Persistence', value: 'PostgreSQL + TypeORM' },
@@ -112,6 +135,47 @@ const statusItems: StatusItem[] = [
   },
 ];
 
+const landingPrinciples: LandingPrinciple[] = [
+  {
+    marker: '01',
+    label: 'One session path',
+    description:
+      'Password and Google sign-in converge on the same cookie-backed behavior.',
+  },
+  {
+    marker: '02',
+    label: 'Contracts first',
+    description:
+      'Shared Zod schemas keep the API and web app from inventing separate truths.',
+  },
+  {
+    marker: '03',
+    label: 'Small foundation',
+    description:
+      'The starter stays lean until a product feature earns more surface area.',
+  },
+];
+
+const landingSystemRows: LandingSystemRow[] = [
+  {
+    layer: 'apps/api',
+    signal: 'NestJS + TypeORM',
+    detail:
+      'PostgreSQL persistence, migrations, auth, and smoke-tested module wiring.',
+  },
+  {
+    layer: 'apps/web',
+    signal: 'Vite + React',
+    detail:
+      'TanStack Router, Query, semantic tokens, and compact app primitives.',
+  },
+  {
+    layer: 'packages/shared',
+    signal: 'Zod contracts',
+    detail: 'Request, response, and session shapes exported from one package.',
+  },
+];
+
 const rootRoute = createRootRouteWithContext<RouterContext>()({
   component: RootLayout,
 });
@@ -119,7 +183,7 @@ const rootRoute = createRootRouteWithContext<RouterContext>()({
 const indexRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/',
-  component: HomeRedirect,
+  component: LandingPage,
 });
 
 const loginRoute = createRoute({
@@ -162,14 +226,6 @@ function RootLayout() {
       <Outlet />
     </div>
   );
-}
-
-function HomeRedirect() {
-  const { data, isLoading } = useMe();
-  if (isLoading) {
-    return <PageMessage title="Checking session" />;
-  }
-  return <Navigate to={data ? '/app' : '/login'} replace />;
 }
 
 function ProtectedLayout() {
@@ -260,6 +316,167 @@ function ProtectedLayout() {
   );
 }
 
+function LandingPage() {
+  return (
+    <main className="min-h-screen overflow-hidden bg-background text-foreground">
+      <section className="relative min-h-[88svh] border-b border-border px-4 pb-10 pt-4 md:px-6">
+        <LandingBackdrop />
+        <div className="relative z-10 mx-auto flex max-w-7xl items-center justify-between gap-4 border-b border-border py-4 pr-36 md:pr-64">
+          <Link className="flex items-center gap-3" to="/">
+            <div className="grid size-10 place-items-center rounded-lg bg-primary text-primary-foreground">
+              <TerminalSquare className="size-5" />
+            </div>
+            <div>
+              <p className="font-display text-xl font-semibold text-display-foreground">
+                Bootstrap
+              </p>
+              <p className="hidden text-xs font-medium text-muted-foreground sm:block">
+                Full-stack starter
+              </p>
+            </div>
+          </Link>
+
+          <nav
+            aria-label="Landing"
+            className="hidden items-center gap-6 text-sm font-semibold text-muted-foreground md:flex"
+          >
+            <a className="hover:text-foreground" href="#principles">
+              Principles
+            </a>
+            <a className="hover:text-foreground" href="#system">
+              System
+            </a>
+            <Link className="hover:text-foreground" to="/login">
+              Sign in
+            </Link>
+          </nav>
+        </div>
+
+        <div className="relative z-10 mx-auto grid max-w-7xl gap-10 py-12 md:grid-cols-[minmax(0,0.94fr)_minmax(360px,0.7fr)] md:items-center md:py-16 lg:py-20">
+          <div className="max-w-4xl">
+            <Badge className="mb-6 w-fit">Node 22 monorepo</Badge>
+            <h1 className="font-display text-6xl font-semibold leading-[0.9] text-display-foreground sm:text-7xl lg:text-8xl">
+              Bootstrap starter
+            </h1>
+            <p className="mt-7 max-w-2xl text-lg leading-8 text-muted-foreground md:text-xl">
+              A clean product foundation for shipping a real full-stack app:
+              auth, contracts, API, web, database, and local orchestration
+              already moving in the same direction.
+            </p>
+
+            <div className="mt-9 flex flex-col gap-3 sm:flex-row">
+              <Button asChild size="lg">
+                <Link to="/register">
+                  Create workspace
+                  <ArrowRight className="size-4" />
+                </Link>
+              </Button>
+              <Button asChild size="lg" variant="outline">
+                <Link to="/app">Open app shell</Link>
+              </Button>
+            </div>
+          </div>
+
+          <ProductScene />
+        </div>
+
+        <div className="relative z-10 mx-auto grid max-w-7xl border-t border-border text-sm md:grid-cols-3">
+          <LandingStat label="Generated from" value="one starter" />
+          <LandingStat label="Runtime target" value="Node 22" />
+          <LandingStat label="Contract layer" value="@bootstrap/shared" />
+        </div>
+      </section>
+
+      <section
+        className="mx-auto grid max-w-7xl gap-8 px-4 py-16 md:grid-cols-[0.7fr_1fr] md:px-6 md:py-24"
+        id="principles"
+      >
+        <div>
+          <p className="text-sm font-semibold uppercase text-primary">
+            Design posture
+          </p>
+          <h2 className="mt-4 font-display text-4xl font-semibold leading-tight text-display-foreground md:text-5xl">
+            Less template. More product spine.
+          </h2>
+        </div>
+        <div className="border-y border-border">
+          {landingPrinciples.map((principle) => (
+            <div
+              className="grid gap-4 border-b border-border py-6 last:border-b-0 sm:grid-cols-[72px_1fr]"
+              key={principle.label}
+            >
+              <p className="font-display text-3xl font-semibold text-primary">
+                {principle.marker}
+              </p>
+              <div>
+                <h3 className="text-xl font-semibold text-foreground">
+                  {principle.label}
+                </h3>
+                <p className="mt-2 max-w-2xl text-base leading-7 text-muted-foreground">
+                  {principle.description}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="border-y border-border bg-card/62" id="system">
+        <div className="mx-auto max-w-7xl px-4 py-16 md:px-6 md:py-24">
+          <div className="grid gap-6 md:grid-cols-[0.8fr_1fr] md:items-end">
+            <h2 className="font-display text-4xl font-semibold leading-tight text-display-foreground md:text-5xl">
+              The starter is small, but the seams are already named.
+            </h2>
+            <p className="text-base leading-7 text-muted-foreground">
+              No fake enterprise shell, no oversized marketing furniture. Just
+              the layers you need to make the first product feature feel like it
+              belongs to a coherent system.
+            </p>
+          </div>
+
+          <div className="mt-12 border-t border-border">
+            {landingSystemRows.map((row) => (
+              <div
+                className="grid gap-3 border-b border-border py-5 md:grid-cols-[180px_220px_1fr] md:items-center"
+                key={row.layer}
+              >
+                <p className="font-mono text-sm font-semibold text-primary">
+                  {row.layer}
+                </p>
+                <p className="text-sm font-semibold text-foreground">
+                  {row.signal}
+                </p>
+                <p className="text-sm leading-6 text-muted-foreground">
+                  {row.detail}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="mx-auto grid max-w-7xl gap-8 px-4 py-16 md:grid-cols-[1fr_auto] md:px-6 md:py-20">
+        <div>
+          <p className="text-sm font-semibold uppercase text-primary">
+            Start point
+          </p>
+          <h2 className="mt-3 max-w-3xl font-display text-4xl font-semibold leading-tight text-display-foreground md:text-5xl">
+            Copy it, initialize it, then let the product become itself.
+          </h2>
+        </div>
+        <div className="flex flex-col gap-3 sm:flex-row md:items-end">
+          <Button asChild size="lg">
+            <Link to="/register">Create account</Link>
+          </Button>
+          <Button asChild size="lg" variant="secondary">
+            <Link to="/login">Sign in</Link>
+          </Button>
+        </div>
+      </section>
+    </main>
+  );
+}
+
 function AppHomePage() {
   const { data } = useMe();
   if (!data) {
@@ -335,6 +552,98 @@ function AppHomePage() {
           </CardContent>
         </Card>
       </section>
+    </div>
+  );
+}
+
+function LandingBackdrop() {
+  return (
+    <div aria-hidden="true" className="absolute inset-0">
+      <div className="absolute inset-0 bg-[linear-gradient(90deg,color-mix(in_srgb,var(--border)_42%,transparent)_1px,transparent_1px),linear-gradient(180deg,color-mix(in_srgb,var(--border)_32%,transparent)_1px,transparent_1px)] bg-[size:64px_64px]" />
+      <div className="landing-scan absolute inset-x-0 top-0 h-px bg-primary/60" />
+    </div>
+  );
+}
+
+function ProductScene() {
+  return (
+    <div className="relative min-h-[420px] overflow-hidden border border-border bg-background/78 p-4 md:min-h-[520px]">
+      <div className="absolute inset-x-0 top-0 flex h-10 items-center gap-2 border-b border-border bg-card px-4">
+        <span className="size-2 rounded-full bg-destructive" />
+        <span className="size-2 rounded-full bg-accent" />
+        <span className="size-2 rounded-full bg-primary" />
+        <span className="ml-3 font-mono text-xs text-muted-foreground">
+          bootstrap://workspace
+        </span>
+      </div>
+
+      <div className="mt-14 grid gap-4">
+        <div className="grid grid-cols-[88px_1fr] border border-border">
+          <div className="border-r border-border bg-secondary/45 p-3 font-mono text-xs text-muted-foreground">
+            api
+          </div>
+          <div className="grid gap-2 p-3">
+            <SceneLine label="auth.module.ts" value="cookie session ready" />
+            <SceneLine label="typeorm.config.ts" value="postgres on 5434" />
+          </div>
+        </div>
+
+        <div className="ml-6 grid grid-cols-[88px_1fr] border border-border">
+          <div className="border-r border-border bg-secondary/45 p-3 font-mono text-xs text-muted-foreground">
+            web
+          </div>
+          <div className="grid gap-2 p-3">
+            <SceneLine label="routes.tsx" value="public + protected shell" />
+            <SceneLine label="tokens.ts" value="semantic theme map" />
+          </div>
+        </div>
+
+        <div className="ml-12 grid grid-cols-[88px_1fr] border border-border">
+          <div className="border-r border-border bg-secondary/45 p-3 font-mono text-xs text-muted-foreground">
+            shared
+          </div>
+          <div className="grid gap-2 p-3">
+            <SceneLine label="auth.schema.ts" value="one contract source" />
+            <SceneLine label="index.ts" value="workspace export path" />
+          </div>
+        </div>
+      </div>
+
+      <div className="absolute bottom-4 left-4 right-4 border border-border bg-card">
+        <div className="flex items-center gap-3 border-b border-border px-3 py-2">
+          <Braces className="size-4 text-primary" />
+          <p className="font-mono text-xs font-semibold text-foreground">
+            pnpm init:project -- --name "Next Product"
+          </p>
+        </div>
+        <div className="grid grid-cols-3 divide-x divide-border text-center text-xs">
+          <p className="py-3 text-muted-foreground">scope</p>
+          <p className="py-3 text-muted-foreground">database</p>
+          <p className="py-3 text-primary">ready</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SceneLine({ label, value }: SceneLineProps) {
+  return (
+    <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
+      <p className="truncate font-mono text-xs text-foreground">{label}</p>
+      <p className="font-mono text-xs text-muted-foreground">{value}</p>
+    </div>
+  );
+}
+
+function LandingStat({ label, value }: LandingStatProps) {
+  return (
+    <div className="border-b border-border py-4 md:border-b-0 md:border-r md:px-5 md:last:border-r-0">
+      <p className="text-xs font-semibold uppercase text-muted-foreground">
+        {label}
+      </p>
+      <p className="mt-1 font-display text-2xl font-semibold text-display-foreground">
+        {value}
+      </p>
     </div>
   );
 }
