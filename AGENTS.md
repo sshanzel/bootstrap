@@ -68,6 +68,8 @@ When adding or renaming GitHub workflow jobs, keep `scripts/initialize-project.m
 - **Keep one auth/session path** — password and Google sign-in should converge on the exact same cookie-backed session behavior.
 - **Centralize shared contracts** — if both the API and web depend on it, it should live in `packages/shared`.
 - **Use simple frontend config** — this repo relies on Vite build-time envs through `import.meta.env`; do not bring back runtime config indirection without a concrete deployment need.
+- **Match UI density to the product surface** — dashboard, settings, and other operational web surfaces should use compact controls and existing primitives instead of oversized, marketing-style elements.
+- **Pre-MVP has no backwards-compatibility contract** — until launch, do not add compatibility shims, shadow fields, or data backfills for renamed fields, old persisted JSON, or staging/local data unless explicitly requested. Prefer the clean canonical contract and reset or clear local data when needed.
 
 ## Code Style
 
@@ -85,7 +87,9 @@ These rules are mandatory.
 - **Object shorthand** — `{ id }`, not `{ id: id }`.
 - **No stray `console.log`** — use structured logging or explicit temporary debugging that is removed before merge. `main.ts` boot messages may use guarded `console.log`.
 - **Do not interpolate unknown errors directly** — normalize errors before logging or returning messages.
+- **Do not use `unknown` for request shapes you clearly expect** — validate boundary payloads with Zod schemas and type the parsed value with a named DTO or shared schema type.
 - **Never leak stack traces to users** — user-facing messages should use safe summaries, not raw server errors.
+- **No broad ESLint disables** — fix the structure or split files before adding file-level disables. Route files are the rare exception when TanStack Router requires co-located route exports and components.
 
 ## Review-Learned Guardrails
 
@@ -114,11 +118,22 @@ These rules are mandatory.
 - **Keep auth flows consistent** — cookie semantics, redirect handling, and refresh behavior should stay aligned across providers.
 - **Prefer explicit filenames** — e.g. `auth.service.ts`, `google-oauth.service.ts`, `cookie.service.ts`.
 - **Single-column uniqueness belongs on the column** via `@Column({ unique: true })`.
+- **Regenerate unmerged migrations when safe** — if a migration only exists on the current PR branch, has not been merged, and has not been run in any shared environment, prefer deleting it and regenerating/rewriting the clean canonical migration instead of adding follow-up fix migrations.
+- **UUIDv7 IDs** — primary IDs use `text` columns and are assigned with `generateId()` in `@BeforeInsert`. Do not use Postgres-generated UUID defaults for app-owned entity IDs.
+- **Entity hooks do not run for plain upserts** — if an insert depends on `@BeforeInsert`, use `repository.create()` + `repository.save()` or explicitly provide the generated value.
+- **Use `text` for database strings** — do not use `varchar` unless there is a concrete database-level reason for a bounded string column.
+- **Explicit column types are preferred** — TypeORM decorators should declare `type` for string, timestamp, and JSON columns so runtime behavior does not depend on reflected metadata alone.
+- **Avoid definite assignment assertions in entities** — TypeORM entity fields should be regular properties without `!`; `strictPropertyInitialization` is disabled for this ORM pattern.
 - **Service decomposition over large workflow classes** — orchestration can call smaller helpers or services.
 - **Transactions are not a reason to keep logic monolithic** — pass transactional context when needed.
+- **Multi-row state changes should be atomic** — when one user action updates several tables that must agree, wrap the writes in one transaction and test through the transactional manager path.
+- **Serialize transactional writes on one DB client** — inside a TypeORM transaction, avoid parallel query patterns that can make `pg` issue overlapping queries on the same client. Save rows sequentially or use one explicit bulk query.
 - **Generic over speculative** — do not design for hypothetical future domains until the product needs them.
 - **Extract shared utilities instead of duplicating** — two usages is a signal, three is a requirement.
 - **Conventional commits** — `<type>(<optional scope>): <short imperative summary>`.
+- **One source of truth for shared limits** — byte limits, content-type options, status options, and kind options belong in `packages/shared` when more than one layer uses them.
+- **Keep Zod enums tuple-safe** — define explicit `as const` option arrays for `z.enum()` and avoid inline spread arrays that widen to `string[]`.
+- **Map content types intentionally** — when generating fallback filenames or object keys, use explicit content-type-to-extension maps. Do not derive extensions with `contentType.split('/')`.
 
 ## Architecture Patterns
 
@@ -142,6 +157,16 @@ Controllers and other boundary-facing files should parse, validate, and hand off
 
 The repo is intentionally lean right now. Favor the smallest implementation that fully supports the current platform and auth requirements.
 
+### Review-Learned Guardrails
+
+Use these checks before opening or re-requesting review on broad feature work:
+
+- **Audit trust boundaries first** — deep-link params, OAuth callback params, redirect URIs, bearer headers, route params, and provider payloads are untrusted until normalized and validated.
+- **Keep secrets out of URLs and UI** — bearer tokens, refresh tokens, share tokens, and equivalent credentials must not appear in redirect query strings, examples, logs, screenshots, or user-facing debug text.
+- **Check protocol parity, not just endpoint parity** — if a new client reuses an existing flow, match the full protocol behavior, including headers, pagination, retry semantics, cache invalidation, and completion calls.
+- **Design explicit failure states for async writes** — user-triggered mutations, uploads, native calls, and provider handoffs need `try`/`catch` or equivalent error handling that resets transient state and gives the user a recovery path.
+- **Validate state transitions after optimistic UI changes** — drafts, selected modes, cached auth state, pagination state, and navigation state should be reset or preserved intentionally on success, cancel, and failure.
+
 ## Common Pitfalls
 
 - **Truthiness checks hiding valid values** — do not accidentally discard `''` or `0` when those values are meaningful.
@@ -151,6 +176,9 @@ The repo is intentionally lean right now. Favor the smallest implementation that
 - **Loading too much data** — fetch the minimum data needed for the active path.
 - **Tests that end too early** — if code writes to the DB or returns a structured result, verify the final outcome, not only the mock interaction.
 - **Missing the API prefix in callbacks** — external callback URLs must include `/api/...` because the Nest app serves everything under that prefix.
+- **N+1 queries** — never write per-row database lookups inside loops. Fetch related records in bulk with joins, query builders, or batched `In([...])` queries, then assemble results in memory.
+- **Unbounded provider calls** — outbound calls to third-party providers must have explicit timeouts and convert network/timeout failures into controlled API errors.
+- **Non-idempotent webhooks** — assume providers retry webhooks. Persist provider callbacks so retries replace or no-op safely rather than duplicating rows or downgrading terminal state.
 
 ## Bug Fixes
 

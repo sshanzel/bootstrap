@@ -135,7 +135,7 @@ Review feedback has been addressed and is ready for re-review.
 | 2. Discussion item | Replied with rationale and left open for product decision. |
 
 Checks passed:
-- `pnpm --filter @salyn/web test`
+- `pnpm --filter @bootstrap/web test`
 - `pnpm format:check`
 
 Threads were replied to and resolved; re-review has been requested.
