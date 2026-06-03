@@ -1,6 +1,7 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
+    "emitDecoratorMetadata": true,
     "lib": ["ES2024"],
     "types": ["node"],
     "outDir": "dist"

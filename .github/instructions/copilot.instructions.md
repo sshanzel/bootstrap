@@ -8,24 +8,19 @@ Skip comments that are only about formatting or stylistic preference when automa
 
 ## Comment classification
 
-Every comment must begin with exactly one severity label on its own line:
+Rely on Copilot's built-in review categorization instead of adding manual severity labels to comments.
 
-- **`[blocker]`** — unsafe, incorrect, or merge-blocking
-- **`[important]`** — real defect or risk that should be fixed before merge
-- **`[suggestion]`** — meaningful improvement in correctness, clarity, or maintainability
+Post comments when they add clear value. Skip comments that do not materially improve correctness, clarity, maintainability, or user experience.
 
-Do not post nit-level comments.
+## Rules for choosing findings
 
-## Rules for choosing severity
-
-- If a comment sits between two levels, choose the lower one.
 - Only comment when you have strong confidence the issue is real.
 - Keep each comment focused on one problem.
 - Do not add praise-only review comments.
 
 ## Bug-fix PRs need tests
 
-If a PR fixes a bug, verify that the PR includes a test that reproduces and validates the fix. Missing coverage is at least `[important]`.
+If a PR fixes a bug, verify that the PR includes a test that reproduces and validates the fix. Missing coverage should still be called out as a meaningful issue.
 
 ## Shared contract changes
 
@@ -33,7 +28,7 @@ When a PR changes request/response schemas, auth payloads, cookie behavior, or s
 
 - verify the API and web stay aligned
 - verify `packages/shared` was updated when the contract is shared
-- treat drift between API behavior and shared schema as `[blocker]`
+- treat drift between API behavior and shared schema as a merge-blocking issue
 
 ## Auth/session review focus
 

@@ -8,7 +8,7 @@
     "noImplicitOverride": true,
     "noUnusedLocals": true,
     "strictPropertyInitialization": false,
-    "emitDecoratorMetadata": true,
+    "emitDecoratorMetadata": false,
     "experimentalDecorators": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
