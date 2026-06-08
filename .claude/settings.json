@@ -41,5 +41,17 @@
       "Bash(rm -rf /)*",
       "Bash(git pull --rebase *)"
     ]
+  },
+  "extraKnownMarketplaces": {
+    "sshanzel": {
+      "source": {
+        "source": "github",
+        "repo": "sshanzel/plugins"
+      }
+    }
+  },
+  "enabledPlugins": {
+    "pr-master@sshanzel": true,
+    "plex@sshanzel": true
   }
 }
