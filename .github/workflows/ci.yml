@@ -40,7 +40,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           cache: pnpm
-          node-version: 22
+          node-version: 24
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @bootstrap/api typecheck
       - run: pnpm --filter @bootstrap/api lint:ci
@@ -58,7 +58,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           cache: pnpm
-          node-version: 22
+          node-version: 24
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @bootstrap/shared typecheck
       - run: pnpm --filter @bootstrap/shared test

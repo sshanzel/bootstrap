@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 # Web service — Vite SPA. Build the static bundle, then serve it with nginx.
 # VITE_API_URL is baked at BUILD time, so it must be the API's public URL.
-FROM node:22-slim AS build
+FROM node:24-slim AS build
 RUN corepack enable && corepack prepare pnpm@10.32.0 --activate
 WORKDIR /app
 COPY . .
