@@ -14,6 +14,7 @@ import {
 import { ThemeContext } from './theme-context';
 
 const THEME_STORAGE_KEY = 'bootstrap-theme';
+const DEFAULT_THEME: ThemeName = 'dark';
 
 function readStoredTheme(): ThemeName | null {
   const storedTheme = window.localStorage.getItem(THEME_STORAGE_KEY);
@@ -32,10 +33,10 @@ function resolveTheme(theme: ThemeName): ResolvedThemeName {
 
 function detectInitialTheme(): ThemeName {
   if (typeof window === 'undefined') {
-    return 'system';
+    return DEFAULT_THEME;
   }
 
-  return readStoredTheme() ?? 'system';
+  return readStoredTheme() ?? DEFAULT_THEME;
 }
 
 function applyResolvedTheme(theme: ResolvedThemeName): void {
@@ -53,7 +54,7 @@ function applyResolvedTheme(theme: ResolvedThemeName): void {
 export function ThemeProvider({ children }: PropsWithChildren) {
   const [theme, setTheme] = useState<ThemeName>(detectInitialTheme);
   const resolvedTheme =
-    typeof window === 'undefined' ? 'light' : resolveTheme(theme);
+    typeof window === 'undefined' ? 'dark' : resolveTheme(theme);
 
   useLayoutEffect(() => {
     applyResolvedTheme(resolveTheme(theme));

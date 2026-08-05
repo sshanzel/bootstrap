@@ -60,8 +60,8 @@
   --display-foreground: #111711;
   --hero-glow: rgba(33, 116, 51, 0.13);
   color-scheme: light;
-  background: #fbfcf8;
-  color: #111711;
+  background: var(--background);
+  color: var(--foreground);
   font-family: 'Manrope Variable', sans-serif;
   font-synthesis: none;
   text-rendering: optimizeLegibility;

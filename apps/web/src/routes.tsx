@@ -26,7 +26,6 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { useState, type PropsWithChildren, type ReactNode } from 'react';
-import { ModeToggle } from '@/components/mode-toggle';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -220,9 +219,6 @@ export const routeTree = rootRoute.addChildren([
 function RootLayout() {
   return (
     <div className="relative min-h-screen">
-      <div className="fixed right-3 top-3 z-20 md:right-5 md:top-5">
-        <ModeToggle />
-      </div>
       <Outlet />
     </div>
   );
