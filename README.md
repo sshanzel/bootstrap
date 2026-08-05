@@ -12,7 +12,7 @@ Reusable full-stack monorepo foundation for new products.
 
 ## Prerequisites
 
-- Node.js 22+
+- Node.js 24+
 - pnpm 10+
 - Docker
 

@@ -2,6 +2,13 @@
 
 pnpm-managed monorepo for the Bootstrap platform.
 
+## Working Style
+
+- **Plan before implementing** — outline the approach for non-trivial changes and confirm it before writing code.
+- **Follow the stated requirements exactly** — ask when they are ambiguous instead of guessing.
+- **Admit uncertainty** — say so when there may be no correct answer or when you do not know.
+- **Keep prose concise** — let the code carry the detail.
+
 ## Structure
 
 - `apps/api/` — NestJS backend (PostgreSQL + TypeORM)
@@ -10,24 +17,28 @@ pnpm-managed monorepo for the Bootstrap platform.
 
 ## Tech Stack
 
-- **Runtime**: Node 22
+- **Runtime**: Node 24
 - **Language**: TypeScript (ESM)
-- **API**: NestJS + TypeORM + PostgreSQL
-- **Web**: Vite + React + TanStack Router + TanStack Query
+- **API**: NestJS + TypeORM + PostgreSQL 17
+- **Web**: Vite + React 19 + TanStack Router + TanStack Query + Tailwind CSS 4
 - **Validation**: Zod v4
+- **Testing**: Jest (api, shared), Vitest (web)
 - **Monorepo**: pnpm workspaces
 - **CI**: GitHub Actions
 
 ## Key Commands
 
 ```bash
+pnpm dev                          # Tilt: Postgres, migrations, API, web
+pnpm db:up                        # start local Postgres only
+pnpm db:migrate                   # run API migrations
+pnpm db:reset                     # reset local database
 pnpm --filter @bootstrap/api dev
 pnpm --filter @bootstrap/web dev
 pnpm --filter @bootstrap/api test
 pnpm --filter @bootstrap/web test
 pnpm --filter @bootstrap/shared test
 pnpm format
-pnpm dev
 pnpm init:project -- --name "My App"
 ```
 
@@ -55,10 +66,10 @@ When adding or renaming GitHub workflow jobs, keep `scripts/initialize-project.m
 
 ## Local Development
 
-- Start PostgreSQL with `docker compose up -d`
+- Start PostgreSQL with `pnpm db:up` (Docker, local port `5434`)
 - Copy `apps/api/.env.example` to `apps/api/.env`
 - Copy `apps/web/.env.example` to `apps/web/.env`
-- Run DB migrations before starting the API
+- Run DB migrations (`pnpm db:migrate`) before starting the API
 - Or run `pnpm dev` to let Tilt orchestrate setup, Postgres, migrations, API, and web
 
 ## Core Principles
@@ -76,6 +87,12 @@ When adding or renaming GitHub workflow jobs, keep `scripts/initialize-project.m
 These rules are mandatory.
 
 - **No single-letter variables** except loop counters (`i`, `j`, `k`) and sort comparators (`a`, `b`).
+- **Comments only when truly necessary** — the default is no comments. Write one only when it captures a constraint or "why" the code itself cannot express; never to restate what the code does. Prefer clear names and small functions, and delete comments that a rename or extraction would make redundant.
+- **Names reveal intent** — function names describe the action being performed.
+- **Prefer few function arguments** — aim for two or three; group related parameters into an options object when the list grows.
+- **No TODOs, placeholders, or stubbed branches** — implement requested functionality completely; do not leave missing pieces for later.
+- **Throw exceptions, not error codes** — signal failures with thrown errors (Nest HTTP exceptions at the API boundary), not sentinel return values.
+- **Prefer `interface` for object shapes** — no `I` prefix; use `type` for unions, `z.infer` results, and derived types.
 - **No nested ternaries** — use `if`/`else`, early returns, or extracted render helpers.
 - **Extract complex conditionals into named helpers** when the intent is not obvious inline.
 - **All imports at the top** of the file.
@@ -103,18 +120,21 @@ These rules are mandatory.
 - **Frontend submit paths must lock pending work** — buttons, gestures, and attachment sends should reflect in-flight mutations in both `disabled` and loading states. Preserve drafts or local selections until the server confirms success, and make retry behavior explicit.
 - **Frontend effects must clean up runtime work** — timers, listeners, object URLs, upload previews, subscriptions, sockets, and deferred callbacks must be cleared on unmount, logout, account switch, and relevant dependency changes.
 - **Generated migrations are part of review readiness** — entity-driven schema changes should use the project migration generator, and constraint/rename changes should be checked against both fresh and existing database shapes when practical.
+- **Audit trust boundaries first** — deep-link params, OAuth callback params, redirect URIs, bearer headers, route params, and provider payloads are untrusted until normalized and validated.
+- **Keep secrets out of URLs and UI** — bearer tokens, refresh tokens, share tokens, and equivalent credentials must not appear in redirect query strings, examples, logs, screenshots, or user-facing debug text.
+- **Check protocol parity, not just endpoint parity** — if a new client reuses an existing flow, match the full protocol behavior, including headers, pagination, retry semantics, cache invalidation, and completion calls.
+- **Design explicit failure states for async writes** — user-triggered mutations, uploads, native calls, and provider handoffs need `try`/`catch` or equivalent error handling that resets transient state and gives the user a recovery path.
+- **Validate state transitions after optimistic UI changes** — drafts, selected modes, cached auth state, pagination state, and navigation state should be reset or preserved intentionally on success, cancel, and failure.
 - **Turn repeated PR lessons into module rules** — when review feedback reveals a durable contract or invariant, document it in the root or owning module `AGENTS.md` before asking for another review pass.
 
 ## Conventions
 
 - **ESM only** — keep `"type": "module"` and modern TS/ESM imports.
-- **No unnecessary comments** — prefer clear names and small functions.
 - **Zod for validation** — schemas live in `packages/shared/src/`.
 - **Shared types** come from `@bootstrap/shared`.
 - **Const arrays over enums** — prefer `as const` arrays plus `z.enum()`.
 - **Dependencies live where they are used** — root dependencies are only for truly shared tooling.
 - **Scoped config changes** — do not change one app's tooling config unless that app needs it.
-- **Incremental development** — add env vars, modules, entities, and infra only when the feature exists.
 - **Keep auth flows consistent** — cookie semantics, redirect handling, and refresh behavior should stay aligned across providers.
 - **Prefer explicit filenames** — e.g. `auth.service.ts`, `google-oauth.service.ts`, `cookie.service.ts`.
 - **Single-column uniqueness belongs on the column** via `@Column({ unique: true })`.
@@ -156,16 +176,6 @@ Controllers and other boundary-facing files should parse, validate, and hand off
 ### Start Narrow
 
 The repo is intentionally lean right now. Favor the smallest implementation that fully supports the current platform and auth requirements.
-
-### Review-Learned Guardrails
-
-Use these checks before opening or re-requesting review on broad feature work:
-
-- **Audit trust boundaries first** — deep-link params, OAuth callback params, redirect URIs, bearer headers, route params, and provider payloads are untrusted until normalized and validated.
-- **Keep secrets out of URLs and UI** — bearer tokens, refresh tokens, share tokens, and equivalent credentials must not appear in redirect query strings, examples, logs, screenshots, or user-facing debug text.
-- **Check protocol parity, not just endpoint parity** — if a new client reuses an existing flow, match the full protocol behavior, including headers, pagination, retry semantics, cache invalidation, and completion calls.
-- **Design explicit failure states for async writes** — user-triggered mutations, uploads, native calls, and provider handoffs need `try`/`catch` or equivalent error handling that resets transient state and gives the user a recovery path.
-- **Validate state transitions after optimistic UI changes** — drafts, selected modes, cached auth state, pagination state, and navigation state should be reset or preserved intentionally on success, cancel, and failure.
 
 ## Common Pitfalls
 
