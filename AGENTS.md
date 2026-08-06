@@ -126,6 +126,7 @@ These rules are mandatory.
 - **Design explicit failure states for async writes** — user-triggered mutations, uploads, native calls, and provider handoffs need `try`/`catch` or equivalent error handling that resets transient state and gives the user a recovery path.
 - **Validate state transitions after optimistic UI changes** — drafts, selected modes, cached auth state, pagination state, and navigation state should be reset or preserved intentionally on success, cancel, and failure.
 - **Turn repeated PR lessons into module rules** — when review feedback reveals a durable contract or invariant, document it in the root or owning module `AGENTS.md` before asking for another review pass.
+- **CSS lives in cascade layers** — base resets and element styles belong in `@layer base`, reusable component classes in `@layer components` (`apps/web/src/styles.css`). Unlayered CSS outranks *every* Tailwind v4 utility regardless of specificity, so an unlayered reset silently defeats `border-*`/`text-*`/font/sizing overrides; keep `@font-face`, `@keyframes`, and `!important` behavioral rules (reduced-motion, Radix scroll-lock) unlayered. (Receipt: the base reset shipped unlayered and utility overrides were being ignored until it was moved into `@layer base`.)
 
 ## Conventions
 
