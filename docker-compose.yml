@@ -15,36 +15,5 @@ services:
       timeout: 5s
       retries: 5
 
-  api:
-    build:
-      context: .
-      dockerfile: apps/api/Dockerfile
-    environment:
-      PORT: '4000'
-      # api reaches postgres by service name on the shared network (internal 5432)
-      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/bootstrap
-      JWT_SECRET: eval-secret
-      FRONTEND_URL: http://127-0-0-1.nip.io
-      API_BASE_URL: http://api.127-0-0-1.nip.io
-      ALLOWED_ORIGINS: http://127-0-0-1.nip.io
-      GOOGLE_CLIENT_ID: unused
-      GOOGLE_CLIENT_SECRET: unused
-    depends_on:
-      postgres:
-        condition: service_healthy
-    ports:
-      - '4000'
-
-  web:
-    build:
-      context: .
-      dockerfile: apps/web/Dockerfile
-      args:
-        VITE_API_URL: http://api.127-0-0-1.nip.io
-    depends_on:
-      - api
-    ports:
-      - '80'
-
 volumes:
   pgdata:
