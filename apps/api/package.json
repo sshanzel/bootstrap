@@ -14,7 +14,8 @@
     "lint": "eslint src/",
     "lint:ci": "eslint src/ --max-warnings 0",
     "test:smoke": "node --import @swc-node/register/esm-register src/test/smoke-app-module.ts",
-    "test": "NODE_OPTIONS='--experimental-vm-modules' jest --config jest.config.mjs"
+    "test": "NODE_OPTIONS='--experimental-vm-modules' jest --config jest.config.mjs",
+    "test:integration": "NODE_OPTIONS='--experimental-vm-modules' jest --config jest.integration.config.mjs"
   },
   "dependencies": {
     "@nestjs/common": "^11.1.16",
@@ -47,10 +48,12 @@
     "@types/express": "^5.0.3",
     "@types/jest": "^30.0.0",
     "@types/pg": "^8.15.6",
+    "@types/supertest": "^6.0.3",
     "@typescript-eslint/eslint-plugin": "^8.56.1",
     "@typescript-eslint/parser": "^8.56.1",
     "eslint": "^9.39.4",
     "jest": "^30.3.0",
+    "supertest": "^7.1.4",
     "typescript-eslint": "^8.56.1"
   }
 }

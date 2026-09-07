@@ -2,20 +2,19 @@ import 'reflect-metadata';
 import './env/load-env';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
+import { configureApp } from './app.setup';
 import { EnvService } from './env/env.service';
 
 async function bootstrap(): Promise<void> {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, { rawBody: true });
   const env = app.get(EnvService);
 
-  app.setGlobalPrefix('api');
-  app.use(cookieParser());
-  app.enableCors({
-    origin: env.getAllowedOrigins(),
-    credentials: true,
-  });
+  configureApp(app);
+  // node runs as PID 1 in the deployed image, and the kernel delivers no
+  // default-disposition signals to PID 1 — without this hook a docker stop
+  // burns the whole grace period into a SIGKILL.
+  app.enableShutdownHooks();
 
   const swaggerConfig = new DocumentBuilder()
     .setTitle('Bootstrap API')
@@ -33,4 +32,7 @@ async function bootstrap(): Promise<void> {
   }
 }
 
-bootstrap();
+bootstrap().catch((error: unknown) => {
+  console.error(error instanceof Error ? error.message : String(error));
+  process.exit(1);
+});

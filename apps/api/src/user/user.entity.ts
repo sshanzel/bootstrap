@@ -1,14 +1,13 @@
 import {
   BeforeInsert,
   Column,
-  CreateDateColumn,
   Entity,
   OneToMany,
   PrimaryColumn,
-  UpdateDateColumn,
 } from 'typeorm';
 import type { RefreshToken } from '../auth/refresh-token.entity';
 import { generateId } from '../common/id';
+import { CreatedAtColumn, UpdatedAtColumn } from '../db/date-columns';
 
 export type AuthProvider = 'local' | 'google';
 
@@ -35,10 +34,10 @@ export class User {
   @Column({ nullable: true, type: 'text', unique: true })
   googleId: string | null;
 
-  @CreateDateColumn()
+  @CreatedAtColumn()
   createdAt: Date;
 
-  @UpdateDateColumn()
+  @UpdatedAtColumn()
   updatedAt: Date;
 
   @OneToMany('RefreshToken', 'user')

@@ -13,8 +13,8 @@ export class InitAuthFoundation1778764623548 implements MigrationInterface {
         "password_hash" text,
         "auth_provider" text NOT NULL DEFAULT 'local',
         "google_id" text,
-        "created_at" TIMESTAMP NOT NULL DEFAULT now(),
-        "updated_at" TIMESTAMP NOT NULL DEFAULT now(),
+        "created_at" TIMESTAMP(3) WITH TIME ZONE NOT NULL DEFAULT now(),
+        "updated_at" TIMESTAMP(3) WITH TIME ZONE NOT NULL DEFAULT now(),
         CONSTRAINT "UQ_users_email" UNIQUE ("email"),
         CONSTRAINT "UQ_users_google_id" UNIQUE ("google_id"),
         CONSTRAINT "PK_users_id" PRIMARY KEY ("id")
@@ -24,8 +24,8 @@ export class InitAuthFoundation1778764623548 implements MigrationInterface {
       CREATE TABLE "refresh_tokens" (
         "id" text NOT NULL,
         "user_id" text NOT NULL,
-        "expires_at" TIMESTAMP NOT NULL,
-        "created_at" TIMESTAMP NOT NULL DEFAULT now(),
+        "expires_at" TIMESTAMP(3) WITH TIME ZONE NOT NULL,
+        "created_at" TIMESTAMP(3) WITH TIME ZONE NOT NULL DEFAULT now(),
         CONSTRAINT "PK_refresh_tokens_id" PRIMARY KEY ("id")
       )
     `);

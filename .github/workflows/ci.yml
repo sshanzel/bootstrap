@@ -46,6 +46,7 @@ jobs:
       - run: pnpm --filter @bootstrap/api lint:ci
       - run: pnpm --filter @bootstrap/api test:smoke
       - run: pnpm --filter @bootstrap/api test
+      - run: pnpm --filter @bootstrap/api test:integration
 
   web:
     name: Web and shared packages

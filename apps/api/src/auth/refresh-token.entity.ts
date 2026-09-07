@@ -1,7 +1,6 @@
 import {
   BeforeInsert,
   Column,
-  CreateDateColumn,
   Entity,
   JoinColumn,
   ManyToOne,
@@ -9,6 +8,7 @@ import {
 } from 'typeorm';
 import type { User } from '../user/user.entity';
 import { generateId } from '../common/id';
+import { CreatedAtColumn, TimestamptzColumn } from '../db/date-columns';
 
 @Entity({ name: 'refresh_tokens' })
 export class RefreshToken {
@@ -22,10 +22,10 @@ export class RefreshToken {
   @JoinColumn()
   user: User;
 
-  @Column({ type: 'timestamp' })
+  @TimestamptzColumn()
   expiresAt: Date;
 
-  @CreateDateColumn()
+  @CreatedAtColumn()
   createdAt: Date;
 
   @BeforeInsert()

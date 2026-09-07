@@ -13,7 +13,7 @@ pnpm-managed monorepo for the Bootstrap platform.
 
 - `apps/api/` — NestJS backend (PostgreSQL + TypeORM)
 - `apps/web/` — Vite + React SPA (TanStack Router + Query)
-- `packages/shared/` — Shared Zod schemas and TypeScript types (`@bootstrap/shared`)
+- `packages/shared/` — Shared Zod contracts (`*.schema.ts`) and runtime helpers (`@bootstrap/shared`)
 
 ## Tech Stack
 
@@ -75,6 +75,7 @@ When adding or renaming GitHub workflow jobs, keep `scripts/initialize-project.m
 ## Core Principles
 
 - **Program defensively** — assume outside input can be malformed, missing, or inconsistent, and validate it where it enters the system.
+- **Stored data is untrusted on read-back** — a persisted row is as suspect as outside input: a hand-written seed, a rotated key, or a hand-edited config can be unreadable or malformed. Decode and validate it where it re-enters the system, and degrade to a controlled, specific error (or an empty view when absence is a normal state), never a blanket 500.
 - **Protect the small foundation** — avoid adding providers, infrastructure, env surface area, or extra abstraction before the product actually needs them.
 - **Keep one auth/session path** — password and Google sign-in should converge on the exact same cookie-backed session behavior.
 - **Centralize shared contracts** — if both the API and web depend on it, it should live in `packages/shared`.
@@ -87,7 +88,8 @@ When adding or renaming GitHub workflow jobs, keep `scripts/initialize-project.m
 These rules are mandatory.
 
 - **No single-letter variables** except loop counters (`i`, `j`, `k`) and sort comparators (`a`, `b`).
-- **Comments only when truly necessary** — the default is no comments. Write one only when it captures a constraint or "why" the code itself cannot express; never to restate what the code does. Prefer clear names and small functions, and delete comments that a rename or extraction would make redundant.
+- **Comments only when truly necessary** — the default is zero comments. Write one only when it captures a constraint, an invariant, or a non-obvious "why" the code itself cannot express; never to narrate code, restate a name, or label a section. **No receipts:** do not cite the plan, review round, PR, or date that produced the code — that is bookkeeping, not a reason. Keep it to one line. Prefer clear names and small functions, and if a rename or extraction removes the need, do that instead.
+- **A quirk or consideration is a test case, not a comment** — when tempted to explain a gotcha ("shaped this way because the obvious version breaks like X", "must run last because…"), write the fail-first test that goes red if the quirk is violated and delete the comment. A gotcha guarded only by prose rots the first time someone "simplifies" it; one guarded by a red test cannot.
 - **Names reveal intent** — function names describe the action being performed.
 - **Prefer few function arguments** — aim for two or three; group related parameters into an options object when the list grows.
 - **No TODOs, placeholders, or stubbed branches** — implement requested functionality completely; do not leave missing pieces for later.
@@ -144,6 +146,8 @@ These rules are mandatory.
 - **Entity hooks do not run for plain upserts** — if an insert depends on `@BeforeInsert`, use `repository.create()` + `repository.save()` or explicitly provide the generated value.
 - **Use `text` for database strings** — do not use `varchar` unless there is a concrete database-level reason for a bounded string column.
 - **Explicit column types are preferred** — TypeORM decorators should declare `type` for string, timestamp, and JSON columns so runtime behavior does not depend on reflected metadata alone.
+- **Timestamps are `timestamptz` at precision 3** — use the decorators in `apps/api/src/db/date-columns.ts` (`CreatedAtColumn`, `UpdatedAtColumn`, `DeletedAtColumn`, `TimestamptzColumn`), never raw `@CreateDateColumn()`/`type: 'timestamp'`. `timestamptz` keeps a stored value an unambiguous instant; precision 3 matches the millisecond `Date` the `pg` driver hydrates, so a keyset cursor cannot skip rows on a sub-millisecond fraction.
+- **Entities and migrations are registered explicitly** — every entity goes in `apps/api/src/db/entities.ts` (`APP_ENTITIES`) and every migration in `apps/api/src/db/migrations.ts` (`APP_MIGRATIONS`); TypeORM never scans the filesystem. Glob-loaded `.ts` entities/migrations do not resolve under the swc/jest transform, so the in-process integration harness needs the imported-class arrays. Add each new migration to `APP_MIGRATIONS` when you generate it.
 - **Avoid definite assignment assertions in entities** — TypeORM entity fields should be regular properties without `!`; `strictPropertyInitialization` is disabled for this ORM pattern.
 - **Service decomposition over large workflow classes** — orchestration can call smaller helpers or services.
 - **Transactions are not a reason to keep logic monolithic** — pass transactional context when needed.
@@ -178,6 +182,15 @@ Controllers and other boundary-facing files should parse, validate, and hand off
 
 The repo is intentionally lean right now. Favor the smallest implementation that fully supports the current platform and auth requirements.
 
+## Data Access and Service Composition
+
+These rules keep the persistence layer testable and free of cycles as the app grows.
+
+- **Repository convention** — DB access for an entity goes through its repository, which extends `apps/api/src/db/base.repository.ts` (manager-aware, one per aggregate root). Business services orchestrate repositories and own the transaction boundary: open `dataSource.transaction(...)` and thread the `manager` into every repository call. Repositories are leaf-level (inject only `DataSource`, never another service) so they compose across modules without a cycle. No service hand-writes `dataSource.getRepository(OtherEntity)`; reach a child entity through its aggregate root and a cross-aggregate read through a query method.
+- **Composition over inheritance** — compose injected collaborators. No `forwardRef`, no domain-service inheritance. The one sanctioned base class is `BaseRepository` (data-access infrastructure). Share by extracting a focused service, not by subclassing one.
+- **Keep breakable logic out of the write path** — put the logic that is easy to get wrong (pure planners/resolvers) in functions you can unit-test in isolation, and keep the persistence path thin. The template is: preflight (all external/non-DB work, zero DB writes) → a manager-aware write method → a thin facade that runs preflight then one `dataSource.transaction`.
+- **Errors surface as one envelope** — throw Nest HTTP exceptions at the boundary; `apps/api/src/common/api-exception.filter.ts` maps them to the shared `apiErrorSchema` shape (`{ statusCode, error, message, requestId?, details? }`) and logs 5xx with the request id. Validate request payloads with the Zod pipe in `apps/api/src/common/zod/` (`ZodBody`/`ZodParam`/`ZodQuery`) so a bad body becomes a 400 with `details`, never an unhandled 500.
+
 ## Common Pitfalls
 
 - **Truthiness checks hiding valid values** — do not accidentally discard `''` or `0` when those values are meaningful.
@@ -190,6 +203,19 @@ The repo is intentionally lean right now. Favor the smallest implementation that
 - **N+1 queries** — never write per-row database lookups inside loops. Fetch related records in bulk with joins, query builders, or batched `In([...])` queries, then assemble results in memory.
 - **Unbounded provider calls** — outbound calls to third-party providers must have explicit timeouts and convert network/timeout failures into controlled API errors.
 - **Non-idempotent webhooks** — assume providers retry webhooks. Persist provider callbacks so retries replace or no-op safely rather than duplicating rows or downgrading terminal state.
+
+## Testing
+
+Tests are the gate before a user experiences the problem. Write every test to fail when the behavior it describes breaks; a green check that can never go red hides the regression it claims to guard.
+
+- **Assert the expected value, not its existence** — if you can name the value, shape, status, or message, assert it. `toBeDefined()`/`toBeTruthy()` is not a test when you can write the literal expected result (URLs, paths, statuses, ids). Recompute nothing the code should produce.
+- **Prove the test can fail before keeping it** — break the code under test and confirm the assertion goes red. If it still passes, it asserts nothing; fix it or delete it.
+- **A bug fix ships a test that proves the bug** — red on the unfixed code, green only once the real fix lands, on the actual code path.
+- **Never buy a green with a workaround** — a path that will not pass without a hacked code path, a skipped step, or a doctored fixture is the symptom of a real bug; fix the code the product runs. An honest red beats a green bought that way.
+- **Verify observable end state, not intermediate bookkeeping** — prefer returned values, final persisted state read back, and the error a bad path throws over "a mock was called". For write paths, read the durable result back and assert it.
+- **Cover the happy path, edge cases, and negatives** — malformed/missing/empty/null input, boundary values, duplicate/replay, unauthorized access, and the failure the code is supposed to reject.
+- **Prefer the real service and a real database over mocks** — DB-hitting paths are proven against real Postgres (`test:integration` boots the real module against `bootstrap_test`). Mock only systems you do not control (third-party HTTP such as Google). When you edit a mock-heavy test, convert it to the real path rather than patching the mock.
+- **No swallowed failures** — no try/catch that lets a thrown assertion pass, no assertion after an early return/throw, no snapshot regenerated just to match current output without reading whether that output is correct.
 
 ## Bug Fixes
 
@@ -210,6 +236,7 @@ pnpm --filter @bootstrap/api lint:ci
 pnpm --filter @bootstrap/web lint:ci
 pnpm --filter @bootstrap/api test:smoke
 pnpm --filter @bootstrap/api test
+pnpm --filter @bootstrap/api test:integration
 pnpm --filter @bootstrap/web test
 pnpm --filter @bootstrap/shared test
 pnpm --filter @bootstrap/web build
@@ -217,6 +244,10 @@ pnpm format:check
 ```
 
 If `format:check` fails, run `pnpm format`.
+
+### API integration tests
+
+`pnpm --filter @bootstrap/api test:integration` boots the real `AppModule` against a dedicated `bootstrap_test` database and drives HTTP flows with supertest. Each worker gets its own database cloned from a migrated template (`bootstrap_test_<scope>_*`), created next to the configured `DATABASE_URL`, so concurrent checkouts do not collide. Like the smoke test it needs the local Postgres container running (`pnpm db:up`). Integration specs are named `*.integration.spec.ts` under `src/test/integration/`; the `schema-drift` spec proves the hand-written migrations produce exactly the schema the entities declare.
 
 ### API smoke test
 
