@@ -106,10 +106,14 @@
     min-height: 100%;
   }
 
-  body {
-    min-width: 320px;
-    margin: 0;
-    @apply bg-background text-foreground font-sans antialiased;
+  /* Reserve the scrollbar gutter so switching between short and tall pages does
+     not shift centered content sideways. The decorative background lives here,
+     on the scroll container, so the reserved gutter (and the gutter left when a
+     Radix overlay locks scroll) is painted seamlessly instead of showing a bare
+     strip of the base color. */
+  html {
+    scrollbar-gutter: stable;
+    background-color: var(--background);
     background-image:
       radial-gradient(circle at 8% 0%, var(--hero-glow), transparent 28%),
       linear-gradient(
@@ -132,6 +136,38 @@
       auto,
       72px 72px,
       72px 72px;
+  }
+
+  /* react-remove-scroll (Radix dialogs, dropdowns, selects) injects margin-right
+     equal to the scrollbar width while scroll is locked, but the gutter above
+     already reserves that space: zero it or every overlay open shifts the page.
+     The doubled attribute outranks the library's injected rule. */
+  body[data-scroll-locked][data-scroll-locked] {
+    margin-right: 0 !important;
+  }
+
+  /* Tailwind v4's preflight leaves a button on the default arrow. Anything a
+     person can click gets the pointer here, in the base layer, so a utility
+     (cursor-not-allowed, cursor-grab) still wins, and a control built without a
+     shared primitive cannot forget it. */
+  button:not(:disabled),
+  [role='button']:not([aria-disabled='true']),
+  select:not(:disabled),
+  summary,
+  label[for] {
+    cursor: pointer;
+  }
+
+  button:disabled,
+  select:disabled {
+    cursor: not-allowed;
+  }
+
+  body {
+    min-width: 320px;
+    margin: 0;
+    background-color: transparent;
+    @apply text-foreground font-sans antialiased;
   }
 
   a:not([data-slot='button']) {
