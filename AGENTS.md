@@ -40,7 +40,10 @@ pnpm --filter @bootstrap/web test
 pnpm --filter @bootstrap/shared test
 pnpm format
 pnpm init:project -- --name "My App"
+pnpm skills:ui-ux                 # refresh the vendored ui-ux-pro-max skill to its latest release
 ```
+
+UI work uses the `ui-ux-pro-max` skill (`.codex/skills/ui-ux-pro-max`, linked into `.claude/skills`). It is vendored from upstream with its version in `VERSION`; run `pnpm skills:ui-ux` before a design pass so it is current.
 
 ## Creating a New Project From This Starter
 
