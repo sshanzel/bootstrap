@@ -8,6 +8,7 @@ pnpm-managed monorepo for the Bootstrap platform.
 - **Follow the stated requirements exactly** — ask when they are ambiguous instead of guessing.
 - **Admit uncertainty** — say so when there may be no correct answer or when you do not know.
 - **Keep prose concise** — let the code carry the detail.
+- **Leave what you touch better than you found it** — when a change passes through existing code, also fix what is within its reach (dead code, misleading names, missing tests, loose types, a broken pattern) as long as the change stays reviewable; call out larger cleanups instead of folding them in.
 
 ## Structure
 
