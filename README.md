@@ -12,7 +12,7 @@ Reusable full-stack monorepo foundation for new products.
 
 ## Prerequisites
 
-- Node.js 24+
+- Node.js 24.22.1+ (the October 2026 security release)
 - pnpm 10+
 - Docker
 

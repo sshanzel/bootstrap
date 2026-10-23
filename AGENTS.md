@@ -18,7 +18,7 @@ pnpm-managed monorepo for the Bootstrap platform.
 
 ## Tech Stack
 
-- **Runtime**: Node 24
+- **Runtime**: Node 24 (>= 24.22.1; `engines` plus `engineStrict` in `pnpm-workspace.yaml` make `pnpm install` refuse older Node)
 - **Language**: TypeScript (ESM)
 - **API**: NestJS + TypeORM + PostgreSQL 17
 - **Web**: Vite + React 19 + TanStack Router + TanStack Query + Tailwind CSS 4
