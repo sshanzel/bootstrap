@@ -53,6 +53,43 @@ function parseMajorVersion(version) {
   return Number.parseInt(match[1], 10);
 }
 
+function parseExactVersion(version) {
+  const match = version.trim().match(/^v?(\d+)\.(\d+)\.(\d+)$/);
+  if (!match) {
+    return null;
+  }
+
+  return match.slice(1).map((part) => Number.parseInt(part, 10));
+}
+
+function isVersionAtLeast(actual, minimum) {
+  for (let i = 0; i < minimum.length; i++) {
+    if (actual[i] !== minimum[i]) {
+      return actual[i] > minimum[i];
+    }
+  }
+
+  return true;
+}
+
+function assertNodeVersion(failures) {
+  const pinnedVersion = readFileSync('.node-version', 'utf8').trim();
+  const minimum = parseExactVersion(pinnedVersion);
+  if (minimum === null) {
+    failures.push(
+      `.node-version must pin an exact version such as 24.22.1; found "${pinnedVersion}".`,
+    );
+    return;
+  }
+
+  const actual = parseExactVersion(process.version);
+  if (actual === null || !isVersionAtLeast(actual, minimum)) {
+    failures.push(
+      `Node.js must be ${pinnedVersion}+ (pinned in .node-version); found ${process.version}.`,
+    );
+  }
+}
+
 function assertCommand(requirement, failures) {
   const result = runCommand(requirement.command, requirement.args);
   if (result.error) {
@@ -83,11 +120,7 @@ function assertCommand(requirement, failures) {
 
 function checkTools() {
   const failures = [];
-  const nodeMajorVersion = parseMajorVersion(process.version);
-
-  if (nodeMajorVersion === null || nodeMajorVersion < 22) {
-    failures.push(`Node.js must be version 22+; found ${process.version}.`);
-  }
+  assertNodeVersion(failures);
 
   const requirements = [
     {
