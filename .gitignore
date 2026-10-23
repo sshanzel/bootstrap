@@ -4,9 +4,9 @@ dist
 coverage
 .DS_Store
 .env
-.env.local
-apps/api/.env
-apps/web/.env
-apps/web/.env.local
-apps/api/dist
-apps/web/dist
+.env.*
+!.env.example
+*.log
+worktrees
+# local-only files such as exported credentials or scratch data; never committed, never in an image
+.local
