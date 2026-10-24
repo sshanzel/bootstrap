@@ -16,7 +16,7 @@
     "test": "NODE_OPTIONS='--experimental-vm-modules' jest --config jest.config.mjs"
   },
   "dependencies": {
-    "zod": "^4.3.6"
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@jest/globals": "^30.3.0",
